@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playing Flappy Present | Greg's Christmas List</title>
+    <link rel="stylesheet" href="global_styles.css">
+</head>
+<body>
+    <a class="home-page-link" href="https://gregschristmaslist.github.io">Return to Home Page</a>
+    <div class="content">
+        <img src="assets/WebsiteBanner.png" alt="" class="banner">
+        
+        <h1>Flappy Present</h1>
+
+        <div class="game-canvas-container"><canvas id="gamecanvas" width="1024" height="512"></canvas></div>
+</body>
+<script>
+
+const ctx = gamecanvas.getContext("2d");
+const scale = gamecanvas.width / 1024;
+
+const birdFlyingImg = new Image();
+birdFlyingImg.src = "assets/present.png";
+
+const birdImg = new Image();
+birdImg.src = "assets/present.png";
+
+const pipeImg = new Image();
+pipeImg.src = "assets/pipe.png";
+
+var gamestarted = false;
+
+var birdX = 0;
+var birdY = 256-32;
+var birdVY = 0;
+
+var score = 0;
+
+const gravity = 5;
+
+var pipes = [
+    {x: 1024, y:256, gap: 256}
+]
+
+function newPipe() {
+    pipes.push(
+        {x: 1024+32, y: Math.random() * (512-(256-score*7)) + (256-score*7)/2, gap: 256-score*7}
+    )
+}
+
+gamecanvas.addEventListener("mousedown", jump);
+document.addEventListener("keydown", jump);
+gamecanvas.addEventListener("touchstart", jump);
+
+function reset() {
+    score = 0;
+    pipes = [
+        {x: 1024, y:256, gap: 256}
+    ]
+    gamestarted = false;
+
+    birdX = 0;
+    birdY = 256-32;
+    birdVY = 0;
+}
+
+function jump() {
+    birdVY = -30;
+    gamestarted = true;
+}
+
+function update(delta) {
+    delta /= 100
+
+    if(!gamestarted) {
+        return;
+    }
+
+    birdVY += gravity * delta;
+    birdY += birdVY * delta;
+
+    if(birdY < -16 || birdY > 512 - 48) {
+        reset();
+    }
+
+    for(var pipei=0; pipei < pipes.length; pipei++) {
+        var pipe = pipes[pipei];
+
+        pipe.x -= 15*delta
+
+        if(pipe.x < 512 & pipes.length < 2) {
+            newPipe();
+        }
+
+        if(pipe.x < -32) {
+            pipes.splice(pipei, 1);
+            score += 1;
+        }
+
+        if (!(pipe.x > 96 || birdY+16 > pipe.y-pipe.gap/2)) {
+            reset()
+        }
+
+        if (!(pipe.x > 96 || birdY+64 < pipe.y+pipe.gap/2)) {
+            reset()
+        }
+    }
+}
+
+function draw() {
+    ctx.fillStyle = "#aaddff";
+    ctx.fillRect(0,0,1024,512);
+
+    ctx.font = "64px sans-serif";
+    ctx.fillStyle="black";
+    ctx.textBaseline = "top"
+
+    if(!gamestarted) {
+        ctx.fillText("Click to start!", 0, 0, 1024);
+    }else {
+        ctx.fillText(score, 0, 0, 1024);
+    }
+
+    if(birdVY < 0) {
+        ctx.drawImage(birdFlyingImg, birdX, birdY, 64, 64)
+    } else {
+        ctx.drawImage(birdImg, birdX, birdY, 64, 64)
+    }
+
+    for(var pipei=0; pipei < pipes.length; pipei++) {
+        var pipe = pipes[pipei];
+
+        ctx.drawImage(pipeImg, pipe.x - 32, 0, 64, pipe.y - pipe.gap/2);
+        ctx.drawImage(pipeImg, pipe.x - 32, pipe.y+pipe.gap/2, 64, 512);
+    }
+}
+
+function loop(timestamp) {
+  var delta = timestamp - lastRender;
+
+  update(delta);
+  draw();
+
+  lastRender = timestamp;
+  window.requestAnimationFrame(loop);
+}
+
+var lastRender = 0;
+window.requestAnimationFrame(loop);
+
+</script>
+</html>
