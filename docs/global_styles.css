@@ -93,3 +93,14 @@ a {
     height: 100%;
     aspect-ratio: 2/1;
 }
+
+.list-items div {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid blue;
+}
+
+.list-items a {
+    color: rgb(128, 194, 247);
+    text-decoration: underline;
+}
